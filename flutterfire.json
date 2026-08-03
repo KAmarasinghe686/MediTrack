@@ -1,0 +1,23 @@
+{
+  "platforms": {
+    "android": {
+      "default": {
+        "projectId": "meditrack-gr05",
+        "appId": "1:914871814119:android:4f19dc65142f0549c3df42",
+        "fileOutput": "android/app/google-services.json"
+      }
+    },
+    "dart": {
+      "lib/firebase_options.dart": {
+        "projectId": "meditrack-gr05",
+        "configurations": {
+          "android": "1:914871814119:android:4f19dc65142f0549c3df42",
+          "ios": "1:914871814119:ios:b8a45cea8c66d212c3df42",
+          "macos": "1:914871814119:ios:b8a45cea8c66d212c3df42",
+          "web": "1:914871814119:web:de08191ec3ac4432c3df42",
+          "windows": "1:914871814119:web:5df670e362e4a574c3df42"
+        }
+      }
+    }
+  }
+}

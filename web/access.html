@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#14B8A6">
+  <meta name="description" content="Secure, patient-authorized MediTrack medical record access.">
+  <title>Secure patient access | MediTrack</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+      --navy: #173f5f;
+      --blue: #14b8a6;
+      --blue-dark: #0f766e;
+      --cyan: #5eead4;
+      --ink: #1e293b;
+      --muted: #64748b;
+      --line: #dce5ef;
+      --surface: #ffffff;
+      --canvas: #f8f8f3;
+      --danger: #dc2626;
+      --success: #087f5b;
+      --warning: #b45309;
+      background: var(--canvas);
+      color: var(--ink);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { min-height: 100%; }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      background:
+        radial-gradient(circle at 8% 8%, rgba(20, 184, 166, 0.13), transparent 24rem),
+        radial-gradient(circle at 94% 30%, rgba(94, 234, 212, 0.16), transparent 22rem),
+        var(--canvas);
+    }
+
+    button, a { -webkit-tap-highlight-color: transparent; }
+    a { color: inherit; }
+
+    .topbar {
+      position: sticky;
+      z-index: 20;
+      top: 0;
+      border-bottom: 1px solid rgba(220, 229, 239, 0.82);
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(18px);
+    }
+
+    .topbar-inner {
+      width: min(1120px, calc(100% - 40px));
+      min-height: 68px;
+      margin: auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 11px;
+      color: var(--navy);
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.45px;
+    }
+
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      background: linear-gradient(145deg, var(--blue), #0f766e);
+      box-shadow: 0 9px 22px rgba(20, 184, 166, 0.24);
+      color: white;
+    }
+
+    .brand-mark svg { width: 22px; height: 22px; }
+
+    .readonly-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 11px;
+      border: 1px solid #a7f3d0;
+      border-radius: 999px;
+      background: #ecfdf5;
+      color: #0f766e;
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .readonly-pill svg { width: 14px; height: 14px; }
+
+    .page {
+      width: min(1120px, calc(100% - 40px));
+      margin: 32px auto 0;
+    }
+
+    .hero {
+      position: relative;
+      min-height: 242px;
+      overflow: hidden;
+      display: flex;
+      align-items: flex-end;
+      padding: 38px;
+      border-radius: 27px;
+      background:
+        linear-gradient(120deg, rgba(23, 63, 95, 0.98), rgba(15, 118, 110, 0.95)),
+        var(--navy);
+      color: white;
+      box-shadow: 0 24px 60px rgba(11, 33, 63, 0.20);
+    }
+
+    .hero::before,
+    .hero::after {
+      content: "";
+      position: absolute;
+      border-radius: 999px;
+      pointer-events: none;
+    }
+
+    .hero::before {
+      width: 360px;
+      height: 360px;
+      right: -75px;
+      top: -220px;
+      border: 1px solid rgba(255, 255, 255, 0.17);
+      box-shadow:
+        0 0 0 42px rgba(255, 255, 255, 0.025),
+        0 0 0 85px rgba(255, 255, 255, 0.022);
+    }
+
+    .hero::after {
+      width: 210px;
+      height: 210px;
+      right: 15%;
+      bottom: -160px;
+      background: rgba(19, 184, 196, 0.22);
+      filter: blur(2px);
+    }
+
+    .hero-copy { position: relative; z-index: 1; max-width: 690px; }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 17px;
+      color: #a5f3fc;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #5eead4;
+      box-shadow: 0 0 0 5px rgba(94, 234, 212, 0.12);
+    }
+
+    .hero h1 {
+      max-width: 660px;
+      margin: 0;
+      font-size: clamp(30px, 5vw, 49px);
+      line-height: 1.05;
+      letter-spacing: -0.045em;
+    }
+
+    .hero p {
+      max-width: 650px;
+      margin: 17px 0 0;
+      color: #d7f5f0;
+      font-size: 15px;
+      line-height: 1.65;
+    }
+
+    #content { min-height: 340px; }
+
+    .loading-state,
+    .state-card {
+      margin: 24px 0;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.94);
+      box-shadow: 0 14px 40px rgba(42, 62, 88, 0.08);
+    }
+
+    .loading-state {
+      padding: 34px;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .loader {
+      width: 46px;
+      height: 46px;
+      border: 4px solid #d7f5f0;
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-state strong { display: block; font-size: 16px; }
+    .loading-state span { display: block; margin-top: 5px; color: var(--muted); font-size: 13px; }
+
+    .state-card {
+      max-width: 660px;
+      margin: 30px auto;
+      padding: 42px;
+      text-align: center;
+    }
+
+    .state-icon {
+      width: 62px;
+      height: 62px;
+      margin: 0 auto 18px;
+      display: grid;
+      place-items: center;
+      border-radius: 19px;
+      background: #fef2f2;
+      color: var(--danger);
+    }
+
+    .state-card.warning .state-icon { background: #fff7ed; color: var(--warning); }
+    .state-icon svg { width: 30px; height: 30px; }
+    .state-card h2 { margin: 0; font-size: 23px; letter-spacing: -0.02em; }
+    .state-card p { margin: 10px auto 0; color: var(--muted); line-height: 1.6; }
+
+    .access-banner {
+      margin: 24px 0 18px;
+      padding: 15px 17px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      border: 1px solid #99f6e4;
+      border-radius: 16px;
+      background: #f0fdfa;
+      color: var(--blue-dark);
+    }
+
+    .access-banner.temporary {
+      border-color: #fed7aa;
+      background: #fff7ed;
+      color: #9a3412;
+    }
+
+    .banner-main { display: flex; align-items: center; gap: 11px; }
+    .banner-main svg { width: 21px; height: 21px; flex: 0 0 auto; }
+    .banner-main strong { display: block; font-size: 14px; }
+    .banner-main span { display: block; margin-top: 2px; font-size: 12px; opacity: 0.78; }
+
+    .verified-chip {
+      flex: 0 0 auto;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(8, 127, 91, 0.10);
+      color: var(--success);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.65fr) minmax(280px, 0.85fr);
+      gap: 18px;
+      align-items: start;
+      min-width: 0;
+    }
+
+    .column { display: grid; min-width: 0; gap: 18px; }
+
+    .card {
+      min-width: 0;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.97);
+      box-shadow: 0 12px 32px rgba(42, 62, 88, 0.07);
+    }
+
+    .card-header {
+      padding: 20px 22px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      border-bottom: 1px solid #edf2f7;
+    }
+
+    .title-wrap { display: flex; align-items: center; gap: 12px; }
+
+    .section-icon {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border-radius: 11px;
+      background: #d7f5f0;
+      color: var(--blue);
+    }
+
+    .section-icon.red { background: #fff1f2; color: #e11d48; }
+    .section-icon.teal { background: #d7f5f0; color: #0f766e; }
+    .section-icon.violet { background: #f5f3ff; color: #7c3aed; }
+    .section-icon svg { width: 19px; height: 19px; }
+
+    .card h2 { margin: 0; color: var(--ink); font-size: 16px; letter-spacing: -0.01em; }
+    .section-subtitle { margin: 3px 0 0; color: var(--muted); font-size: 12px; }
+    .count { color: var(--muted); font-size: 12px; font-weight: 700; }
+    .card-body { padding: 20px 22px; }
+
+    .critical-grid {
+      display: grid;
+      grid-template-columns: 145px minmax(0, 1fr);
+      gap: 20px;
+    }
+
+    .blood-card {
+      min-height: 136px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      border: 1px solid #fecdd3;
+      border-radius: 16px;
+      background: linear-gradient(145deg, #fff1f2, #fffafa);
+      text-align: center;
+    }
+
+    .blood-card span { color: #9f1239; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; }
+    .blood-card strong { margin-top: 5px; color: #be123c; font-size: 39px; line-height: 1; letter-spacing: -0.05em; }
+
+    .detail-stack { display: grid; gap: 16px; }
+    .detail-label { margin-bottom: 8px; color: var(--muted); font-size: 12px; font-weight: 750; }
+    .tags { display: flex; flex-wrap: wrap; gap: 7px; }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 29px;
+      padding: 5px 10px;
+      border: 1px solid #fecaca;
+      border-radius: 999px;
+      background: #fef2f2;
+      color: #b91c1c;
+      font-size: 12px;
+      font-weight: 650;
+    }
+
+    .tag.medication { border-color: #ddd6fe; background: #f5f3ff; color: #6d28d9; }
+    .empty-text { color: #94a3b8; font-size: 13px; }
+
+    .contact-list { display: grid; gap: 10px; }
+
+    .contact {
+      padding: 13px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border: 1px solid #e6edf5;
+      border-radius: 14px;
+      background: #fbfdff;
+    }
+
+    .avatar {
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #d7f5f0, #ccfbf1);
+      color: #0f766e;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .contact-copy { min-width: 0; flex: 1; }
+    .contact-name { overflow: hidden; font-size: 14px; font-weight: 750; text-overflow: ellipsis; white-space: nowrap; }
+    .contact-relation { margin-top: 3px; color: var(--muted); font-size: 12px; }
+
+    .call-button,
+    .view-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 750;
+    }
+
+    .call-button {
+      width: 37px;
+      height: 37px;
+      flex: 0 0 auto;
+      background: #d7f5f0;
+      color: #0f766e;
+    }
+
+    .call-button svg, .view-button svg { width: 15px; height: 15px; }
+
+    .record-list { display: grid; }
+
+    .record {
+      padding: 14px 0;
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      min-width: 0;
+      border-bottom: 1px solid #edf2f7;
+    }
+
+    .record:first-child { padding-top: 0; }
+    .record:last-child { padding-bottom: 0; border-bottom: 0; }
+
+    .record-symbol {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      border-radius: 12px;
+      background: #eff6ff;
+      color: var(--blue);
+    }
+
+    .record-symbol svg { width: 20px; height: 20px; }
+    .record-copy { min-width: 0; flex: 1; }
+    .record-title { overflow: hidden; font-size: 14px; font-weight: 750; text-overflow: ellipsis; white-space: nowrap; }
+    .record-meta { margin-top: 4px; color: var(--muted); font-size: 12px; }
+
+    .view-button {
+      flex: 0 0 auto;
+      min-height: 35px;
+      padding: 7px 11px;
+      border: 1px solid #99f6e4;
+      background: white;
+      color: #0f766e;
+    }
+
+    .view-button:hover { background: #f0fdfa; }
+
+    .show-records-button {
+      width: 100%;
+      margin-top: 16px;
+      padding: 11px 14px;
+      border: 1px solid #99f6e4;
+      border-radius: 11px;
+      background: #f0fdfa;
+      color: #0f766e;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 750;
+      cursor: pointer;
+    }
+
+    .show-records-button:hover { background: #d7f5f0; }
+
+    .security-list { display: grid; gap: 15px; }
+    .security-item { display: flex; align-items: flex-start; gap: 11px; }
+
+    .check {
+      width: 23px;
+      height: 23px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      border-radius: 50%;
+      background: #ecfdf5;
+      color: var(--success);
+    }
+
+    .check svg { width: 13px; height: 13px; }
+    .security-item strong { display: block; font-size: 13px; }
+    .security-item p { margin: 3px 0 0; color: var(--muted); font-size: 12px; line-height: 1.5; }
+
+    .privacy-note {
+      padding: 16px;
+      border-radius: 14px;
+      background: #f8fafc;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .empty-panel {
+      padding: 10px 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+      text-align: center;
+    }
+
+    .footer {
+      width: min(1120px, calc(100% - 40px));
+      margin: 26px auto 0;
+      padding: 22px 0 30px;
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      border-top: 1px solid var(--line);
+      color: #8290a3;
+      font-size: 11px;
+    }
+
+    @media (max-width: 820px) {
+      .content-grid { grid-template-columns: 1fr; }
+      .side-column { grid-row: auto; }
+    }
+
+    @media (max-width: 600px) {
+      .topbar-inner, .page, .footer { width: min(100% - 28px, 1120px); }
+      .topbar-inner { min-height: 62px; }
+      .brand { font-size: 18px; }
+      .readonly-pill { padding: 6px 9px; }
+      .page { margin-top: 18px; }
+      .hero { min-height: 225px; padding: 27px 23px; border-radius: 21px; }
+      .hero p { font-size: 14px; }
+      .access-banner { align-items: flex-start; }
+      .verified-chip { display: none; }
+      .critical-grid { grid-template-columns: 1fr; }
+      .blood-card { min-height: 112px; }
+      .card-header, .card-body { padding-left: 17px; padding-right: 17px; }
+      .record { align-items: flex-start; }
+      .view-button { padding: 7px 9px; }
+      .footer { flex-direction: column; text-align: center; }
+      .state-card { padding: 34px 21px; }
+    }
+
+    @media (max-width: 390px) {
+      .record { flex-wrap: wrap; }
+      .record-copy { min-width: calc(100% - 55px); }
+      .view-button { margin-left: 55px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand" aria-label="MediTrack">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 2 4 5.5v5.8c0 5.3 3.45 10.25 8 11.7 4.55-1.45 8-6.4 8-11.7V5.5L12 2Zm0 3.02 5 2.18v4.1c0 3.76-2.24 7.49-5 8.72-2.76-1.23-5-4.96-5-8.72V7.2l5-2.18Zm-1.25 3.23v2.5h-2.5v2.5h2.5v2.5h2.5v-2.5h2.5v-2.5h-2.5v-2.5h-2.5Z"/>
+          </svg>
+        </span>
+        MediTrack
+      </div>
+      <span class="readonly-pill">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="5" y="10" width="14" height="10" rx="2"/>
+          <path d="M8 10V7a4 4 0 0 1 8 0v3"/>
+        </svg>
+        Read-only access
+      </span>
+    </div>
+  </header>
+
+  <main class="page">
+    <section class="hero">
+      <div class="hero-copy">
+        <div class="eyebrow">Patient-authorized access</div>
+        <h1>Medical information when every second matters.</h1>
+        <p>
+          This secure view was shared directly by the patient. Review critical
+          details, emergency contacts, and available records below.
+        </p>
+      </div>
+    </section>
+
+    <div id="content" aria-live="polite">
+      <section class="loading-state">
+        <div class="loader" aria-hidden="true"></div>
+        <div>
+          <strong>Verifying secure access</strong>
+          <span>Checking the link and preparing the patient record.</span>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <span>MediTrack secure patient record access</span>
+    <span>Information shared with patient consent</span>
+  </footer>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+    import {
+      getFirestore,
+      doc,
+      getDoc,
+      collection,
+      query,
+      where,
+      getDocs
+    } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDZXpzKJFfWPpSMpe9tWiFoy0yL_oF_fvo",
+      authDomain: "meditrack-gr05.firebaseapp.com",
+      projectId: "meditrack-gr05",
+      storageBucket: "meditrack-gr05.firebasestorage.app",
+      messagingSenderId: "914871814119",
+      appId: "1:914871814119:web:de08191ec3ac4432c3df42"
+    };
+
+    const db = getFirestore(initializeApp(firebaseConfig));
+    const content = document.getElementById("content");
+
+    const icons = {
+      alert: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4m0 4h.01"/><path d="M10.3 3.7 2.4 17.4A2 2 0 0 0 4.1 20h15.8a2 2 0 0 0 1.7-2.6L13.7 3.7a2 2 0 0 0-3.4 0Z"/></svg>`,
+      check: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m5 12 4 4L19 6"/></svg>`,
+      clock: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>`,
+      document: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2h8l4 4v16H6z"/><path d="M14 2v5h5M9 13h6M9 17h6"/></svg>`,
+      external: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 5h5v5M13 11l6-6M19 13v6H5V5h6"/></svg>`,
+      folder: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h7l2 2h9v11H3z"/></svg>`,
+      heart: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z"/></svg>`,
+      phone: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.4 19.4 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2.1Z"/></svg>`,
+      shield: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg>`,
+      users: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></svg>`
+    };
+
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>"']/g, character => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        "\"": "&quot;",
+        "'": "&#039;"
+      })[character]);
+    }
+
+    function safeWebUrl(value) {
+      if (!value) return null;
+      try {
+        const parsed = new URL(String(value), window.location.origin);
+        return ["http:", "https:"].includes(parsed.protocol) ? parsed.href : null;
+      } catch (_) {
+        return null;
+      }
+    }
+
+    function safePhone(value) {
+      return String(value ?? "").replace(/[^+0-9,;#*]/g, "");
+    }
+
+    function asDate(value) {
+      if (!value) return null;
+      const seconds = value.seconds ?? value._seconds;
+      const result = typeof value.toDate === "function"
+        ? value.toDate()
+        : seconds !== undefined
+          ? new Date(seconds * 1000)
+          : new Date(value);
+      return Number.isNaN(result.getTime()) ? null : result;
+    }
+
+    function listFrom(value) {
+      if (Array.isArray(value)) return value.filter(Boolean).map(String);
+      return value ? [String(value)] : [];
+    }
+
+    function unique(values) {
+      return [...new Set(values.map(value => value.trim()).filter(Boolean))];
+    }
+
+    function initials(name) {
+      const parts = String(name || "Contact").trim().split(/\s+/).slice(0, 2);
+      return parts.map(part => part[0]?.toUpperCase() || "").join("") || "EC";
+    }
+
+    function showState(title, message, type = "error") {
+      content.innerHTML = `
+        <section class="state-card ${type === "warning" ? "warning" : ""}">
+          <div class="state-icon">${icons.alert}</div>
+          <h2>${escapeHtml(title)}</h2>
+          <p>${escapeHtml(message)}</p>
+        </section>
+      `;
+    }
+
+    async function resolveAccessToken(token) {
+      if (token.startsWith("meditrack-")) {
+        const firstDash = token.indexOf("-");
+        const lastDash = token.lastIndexOf("-");
+
+        if (firstDash !== -1 && lastDash !== firstDash) {
+          const possibleUserId = token.substring(firstDash + 1, lastDash);
+          const tokenDocument = await getDoc(doc(db, "qr_tokens", possibleUserId));
+          if (tokenDocument.exists() && tokenDocument.data().token === token) {
+            return { userId: possibleUserId, expiresAt: null };
+          }
+        }
+      }
+
+      const tokenQuery = query(
+        collection(db, "access_tokens"),
+        where("token", "==", token)
+      );
+      const tokenSnapshot = await getDocs(tokenQuery);
+      if (tokenSnapshot.empty) return null;
+
+      const tokenData = tokenSnapshot.docs[0].data();
+      if (tokenData.isRevoked === true) {
+        return { error: "revoked" };
+      }
+
+      const expiresAt = asDate(tokenData.expiresAt);
+      if (!expiresAt || Date.now() > expiresAt.getTime()) {
+        return { error: "expired" };
+      }
+
+      if (!tokenData.userId) return null;
+      return { userId: tokenData.userId, expiresAt };
+    }
+
+    async function loadPatientData() {
+      const token = new URLSearchParams(window.location.search).get("token")?.trim();
+
+      if (!token) {
+        showState("Invalid access link", "This link does not contain an access token.");
+        return;
+      }
+
+      try {
+        const access = await resolveAccessToken(token);
+
+        if (access?.error === "revoked") {
+          showState(
+            "Access has been revoked",
+            "The patient has cancelled this link. Ask them to share a new access link.",
+            "warning"
+          );
+          return;
+        }
+
+        if (access?.error === "expired") {
+          showState(
+            "This link has expired",
+            "Ask the patient to generate a new temporary access link.",
+            "warning"
+          );
+          return;
+        }
+
+        if (!access?.userId) {
+          showState("Access link not recognized", "This link is invalid or no longer available.");
+          return;
+        }
+
+        const [profileDocument, recordsSnapshot] = await Promise.all([
+          getDoc(doc(db, "emergency_profiles", access.userId)),
+          getDocs(query(collection(db, "records"), where("patientId", "==", access.userId)))
+        ]);
+
+        const profile = profileDocument.exists() ? profileDocument.data() : null;
+        const records = recordsSnapshot.docs.map(record => record.data());
+        renderPatientData(profile, records, access.expiresAt);
+      } catch (error) {
+        console.error("MediTrack access page error", error);
+        showState(
+          "Unable to load the record",
+          "Check your connection and try opening the access link again."
+        );
+      }
+    }
+
+    function accessBanner(expiresAt) {
+      if (expiresAt) {
+        const formatted = new Intl.DateTimeFormat([], {
+          dateStyle: "medium",
+          timeStyle: "short"
+        }).format(expiresAt);
+        return `
+          <div class="access-banner temporary">
+            <div class="banner-main">
+              ${icons.clock}
+              <div>
+                <strong>Temporary access is active</strong>
+                <span>Available until ${escapeHtml(formatted)}</span>
+              </div>
+            </div>
+            <span class="verified-chip">Verified link</span>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="access-banner">
+          <div class="banner-main">
+            ${icons.shield}
+            <div>
+              <strong>Patient access verified</strong>
+              <span>This is a secure, read-only medical record view.</span>
+            </div>
+          </div>
+          <span class="verified-chip">Verified link</span>
+        </div>
+      `;
+    }
+
+    function tagList(items, className = "") {
+      if (!items.length) return `<span class="empty-text">None reported</span>`;
+      return `<div class="tags">${items.map(item =>
+        `<span class="tag ${className}">${escapeHtml(item)}</span>`
+      ).join("")}</div>`;
+    }
+
+    function normalizeContacts(rawContacts) {
+      if (!rawContacts || typeof rawContacts !== "object") return [];
+
+      return Object.entries(rawContacts).map(([name, value]) => {
+        if (typeof value === "string") {
+          return { name, relationship: "Emergency contact", phone: value };
+        }
+        return {
+          name,
+          relationship: value?.relationship || "Emergency contact",
+          phone: value?.phone || ""
+        };
+      }).filter(contact => contact.name || contact.phone);
+    }
+
+    function criticalCard(profile) {
+      const allergies = unique([
+        ...listFrom(profile?.allergies),
+        ...listFrom(profile?.drugAllergies),
+        ...listFrom(profile?.foodAllergies),
+        ...listFrom(profile?.otherAllergies)
+      ]);
+      const currentMedications = unique(listFrom(profile?.currentMedications));
+      const bloodType = profile?.bloodType || "?";
+
+      return `
+        <section class="card">
+          <div class="card-header">
+            <div class="title-wrap">
+              <span class="section-icon red">${icons.heart}</span>
+              <div>
+                <h2>Critical information</h2>
+                <p class="section-subtitle">Review before providing treatment</p>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="critical-grid">
+              <div class="blood-card">
+                <span>Blood type</span>
+                <strong>${escapeHtml(bloodType)}</strong>
+              </div>
+              <div class="detail-stack">
+                <div>
+                  <div class="detail-label">Known allergies</div>
+                  ${tagList(allergies)}
+                </div>
+                <div>
+                  <div class="detail-label">Current medications</div>
+                  ${tagList(currentMedications, "medication")}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
+    function contactsCard(profile) {
+      const contacts = normalizeContacts(profile?.emergencyContacts);
+      const contactItems = contacts.length
+        ? contacts.map(contact => {
+            const phone = String(contact.phone || "");
+            const callablePhone = safePhone(phone);
+            return `
+              <div class="contact">
+                <div class="avatar">${escapeHtml(initials(contact.name))}</div>
+                <div class="contact-copy">
+                  <div class="contact-name">${escapeHtml(contact.name || "Emergency contact")}</div>
+                  <div class="contact-relation">
+                    ${escapeHtml(contact.relationship)}${phone ? ` &middot; ${escapeHtml(phone)}` : ""}
+                  </div>
+                </div>
+                ${callablePhone ? `
+                  <a class="call-button" href="tel:${escapeHtml(callablePhone)}" aria-label="Call ${escapeHtml(contact.name)}">
+                    ${icons.phone}
+                  </a>
+                ` : ""}
+              </div>
+            `;
+          }).join("")
+        : `<div class="empty-panel">No emergency contacts have been provided.</div>`;
+
+      return `
+        <section class="card">
+          <div class="card-header">
+            <div class="title-wrap">
+              <span class="section-icon teal">${icons.users}</span>
+              <div>
+                <h2>Emergency contacts</h2>
+                <p class="section-subtitle">People authorized by the patient</p>
+              </div>
+            </div>
+            <span class="count">${contacts.length}</span>
+          </div>
+          <div class="card-body"><div class="contact-list">${contactItems}</div></div>
+        </section>
+      `;
+    }
+
+    function recordIcon(type) {
+      const normalized = String(type || "").toLowerCase();
+      return normalized.includes("prescription") ? icons.document : icons.folder;
+    }
+
+    function recordsCard(records, expanded = false) {
+      const sortedRecords = [...records].sort((a, b) => {
+        const first = asDate(a.uploadDate ?? a.uploadedAt ?? a.createdAt)?.getTime() || 0;
+        const second = asDate(b.uploadDate ?? b.uploadedAt ?? b.createdAt)?.getTime() || 0;
+        return second - first;
+      });
+
+      const visibleRecords = expanded ? sortedRecords : sortedRecords.slice(0, 4);
+      const recordItems = visibleRecords.length
+        ? visibleRecords.map(record => {
+            const date = asDate(record.uploadDate ?? record.uploadedAt ?? record.createdAt);
+            const dateText = date
+              ? new Intl.DateTimeFormat([], { dateStyle: "medium" }).format(date)
+              : "Date unavailable";
+            const type = record.type || "Medical record";
+            const url = safeWebUrl(record.fileUrl);
+
+            return `
+              <div class="record">
+                <div class="record-symbol">${recordIcon(type)}</div>
+                <div class="record-copy">
+                  <div class="record-title">${escapeHtml(record.title || "Untitled record")}</div>
+                  <div class="record-meta">${escapeHtml(type)} &middot; ${escapeHtml(dateText)}</div>
+                </div>
+                ${url ? `
+                  <a class="view-button" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">
+                    View ${icons.external}
+                  </a>
+                ` : ""}
+              </div>
+            `;
+          }).join("")
+        : `<div class="empty-panel">No medical documents are available through this link.</div>`;
+
+      return `
+        <section class="card">
+          <div class="card-header">
+            <div class="title-wrap">
+              <span class="section-icon violet">${icons.folder}</span>
+              <div>
+                <h2>Medical records</h2>
+                <p class="section-subtitle">Documents shared by the patient</p>
+              </div>
+            </div>
+            <span class="count">${sortedRecords.length}</span>
+          </div>
+          <div class="card-body">
+            <div class="record-list">${recordItems}</div>
+            ${sortedRecords.length > 4 ? `
+              <button class="show-records-button" type="button" data-records-toggle>
+                ${expanded ? "Show fewer records" : `View all ${sortedRecords.length} records`}
+              </button>
+            ` : ""}
+          </div>
+        </section>
+      `;
+    }
+
+    function securityCard(expiresAt) {
+      return `
+        <section class="card">
+          <div class="card-header">
+            <div class="title-wrap">
+              <span class="section-icon">${icons.shield}</span>
+              <div>
+                <h2>Access protection</h2>
+                <p class="section-subtitle">How this view is secured</p>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="security-list">
+              <div class="security-item">
+                <span class="check">${icons.check}</span>
+                <div><strong>Read-only information</strong><p>Nothing on this page can change the patient's medical profile.</p></div>
+              </div>
+              <div class="security-item">
+                <span class="check">${icons.check}</span>
+                <div><strong>Patient controlled</strong><p>${expiresAt ? "The patient can revoke this temporary link at any time." : "The patient controls access through their MediTrack QR code."}</p></div>
+              </div>
+              <div class="security-item">
+                <span class="check">${icons.check}</span>
+                <div><strong>Purpose limited</strong><p>Use this information only to support the patient's care.</p></div>
+              </div>
+              <div class="privacy-note">
+                Close this page when you finish reviewing the record, especially on a shared device.
+              </div>
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
+    function renderPatientData(profile, records, expiresAt, expanded = false) {
+      content.innerHTML = `
+        ${accessBanner(expiresAt)}
+        <div class="content-grid">
+          <div class="column">
+            ${criticalCard(profile)}
+            ${recordsCard(records, expanded)}
+          </div>
+          <aside class="column side-column">
+            ${contactsCard(profile)}
+            ${securityCard(expiresAt)}
+          </aside>
+        </div>
+      `;
+
+      const toggle = content.querySelector("[data-records-toggle]");
+      if (toggle) {
+        toggle.addEventListener("click", () =>
+          renderPatientData(profile, records, expiresAt, !expanded)
+        );
+      }
+    }
+
+    loadPatientData();
+  </script>
+</body>
+</html>

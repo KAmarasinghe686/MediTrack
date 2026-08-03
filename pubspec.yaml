@@ -1,0 +1,74 @@
+name: meditrack
+description: "A context-aware emergency medical assistant and digital medical record tracking application."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+  
+  # Firebase
+  firebase_core: ^3.13.0
+  firebase_auth: ^5.5.0
+  google_sign_in: ^7.2.0
+  cloud_firestore: ^5.6.0
+  firebase_storage: ^12.4.0
+  
+  # Location
+  geolocator: ^14.0.2
+  sensors_plus: ^7.1.0
+  
+  # File pickers
+  file_picker: ^8.0.0
+  image_picker: ^1.0.7
+  http: ^1.2.0
+  
+  # Permissions
+  permission_handler: ^11.0.1
+  
+  # OCR
+  google_mlkit_text_recognition: ^0.15.1
+  
+  # QR
+  qr_flutter: ^4.1.0
+  mobile_scanner: ^7.2.1
+  pdf: ^3.12.0
+  printing: ^5.14.3
+  
+  # Sharing & URLs
+  share_plus: ^12.0.2
+  url_launcher: ^6.2.5
+  
+  # Notifications
+  flutter_local_notifications: ^17.0.0
+  flutter_background_service: ^5.1.0
+  timezone: ^0.9.2
+  # Utilities
+  intl: ^0.19.0
+  path_provider: ^2.1.2
+  flutter_svg: ^2.0.9
+  
+  # ✅ Added for settings screens
+  shared_preferences: ^2.2.0
+  crypto: ^3.0.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: assets/icons/meditrack_launcher_icon.png
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
